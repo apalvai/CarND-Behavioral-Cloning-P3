@@ -28,7 +28,6 @@ for line in lines:
     center_image_filename = line[0].split('/')[-1]
     center_image_path = './data/IMG/' + center_image_filename
     image = cv2.imread(center_image_path)
-#    image = image.reshape(image.shape + (1,))
     images.append(image)
     
     # read measurement
@@ -48,7 +47,6 @@ for line in lines:
     left_image_filename = line[1].split('/')[-1]
     left_image_path = './data/IMG/' + left_image_filename
     left_image = cv2.imread(left_image_path)
-#    left_image = left_image.reshape(left_image.shape + (1,))
     images.append(left_image)
     
     # read left measurement
@@ -65,7 +63,6 @@ for line in lines:
     right_image_filename = line[2].split('/')[-1]
     right_image_path = './data/IMG/' + right_image_filename
     right_image = cv2.imread(right_image_path)
-#    right_image = right_image.reshape(right_image.shape + (1,))
     images.append(right_image)
     
     # read right measurement
@@ -90,15 +87,15 @@ input_shape = X_train[0].shape
 model = Sequential()
 model.add(Cropping2D(cropping=((70, 25), (0, 0)), input_shape=input_shape))
 model.add(Lambda(lambda x: (x / 255.0) - 0.5, input_shape=(90, 320, 3))) #Image normalization
-model.add(Convolution2D(24, 5, 5, subsample=(2, 2), activation='relu'))
+model.add(Convolution2D(24, 5, 5, subsample=(2, 2)))
 model.add(LeakyReLU(alpha=.001))
-model.add(Convolution2D(36, 3, 3, subsample=(2, 2), activation='relu'))
+model.add(Convolution2D(36, 3, 3, subsample=(2, 2)))
 model.add(LeakyReLU(alpha=.001))
-model.add(Convolution2D(48, 3, 3, subsample=(2, 2), activation='relu'))
+model.add(Convolution2D(48, 3, 3, subsample=(2, 2)))
 model.add(LeakyReLU(alpha=.001))
-model.add(Convolution2D(64, 3, 3, activation='relu'))
+model.add(Convolution2D(64, 3, 3))
 model.add(LeakyReLU(alpha=.001))
-model.add(Convolution2D(64, 3, 3, activation='relu'))
+model.add(Convolution2D(64, 3, 3))
 model.add(LeakyReLU(alpha=.001))
 model.add(Flatten())
 model.add(Dense(100))
