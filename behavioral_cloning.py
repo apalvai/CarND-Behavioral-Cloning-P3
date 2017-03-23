@@ -2,11 +2,13 @@ import csv
 import numpy as np
 import cv2
 
+import matplotlib.pyplot as plt
+
 from keras.models import Sequential
 from keras.layers import Flatten, Dense, Lambda, Cropping2D, Dropout
 from keras.layers.convolutional import Convolution2D
 from keras.layers.pooling import MaxPooling2D
-from keras.layers.advanced_activations import LeakyReLU
+from keras.layers.advanced_activations import ELU
 from keras.callbacks import EarlyStopping
 
 # fetch data
@@ -41,7 +43,7 @@ for line in lines:
     measurements.append(measurement_flipped)
     
     # correction
-    correction = 0.1
+    correction = 0.25
     
     # read left image
     left_image_filename = line[1].split('/')[-1]
@@ -81,31 +83,47 @@ y_train = np.array(measurements)
 print('X_train shape', X_train.shape)
 print('y_train shape', y_train.shape)
 
+#plot steering angle measurements distribution
+#unique_angles = list(set(y_train))
+#unique_angles = unique_angles.sort()
+#plt.hist(y_train, unique_angles)
+#plt.show()
+
 input_shape = X_train[0].shape
+
+# params
+elu_alpha = 0.01
+keep_prob = 0.5
 
 # model
 model = Sequential()
-model.add(Cropping2D(cropping=((70, 25), (0, 0)), input_shape=input_shape))
-model.add(Lambda(lambda x: (x / 255.0) - 0.5, input_shape=(90, 320, 3))) #Image normalization
+model.add(Cropping2D(cropping=((60, 20), (0, 0)), input_shape=input_shape))
+model.add(Lambda(lambda x: (x / 255.0) - 0.5, input_shape=(80, 320, 3))) #Image normalization
 model.add(Convolution2D(24, 5, 5, subsample=(2, 2)))
-model.add(LeakyReLU(alpha=.001))
+model.add(ELU(elu_alpha))
 model.add(Convolution2D(36, 3, 3, subsample=(2, 2)))
-model.add(LeakyReLU(alpha=.001))
+model.add(ELU(elu_alpha))
+model.add(Dropout(keep_prob))
 model.add(Convolution2D(48, 3, 3, subsample=(2, 2)))
-model.add(LeakyReLU(alpha=.001))
+model.add(ELU(elu_alpha))
 model.add(Convolution2D(64, 3, 3))
-model.add(LeakyReLU(alpha=.001))
+model.add(ELU(elu_alpha))
+model.add(Dropout(keep_prob))
 model.add(Convolution2D(64, 3, 3))
-model.add(LeakyReLU(alpha=.001))
+model.add(ELU(elu_alpha))
 model.add(Flatten())
 model.add(Dense(1164))
-model.add(LeakyReLU(alpha=.001))
+model.add(ELU(elu_alpha))
+model.add(Dropout(keep_prob))
 model.add(Dense(100))
-model.add(LeakyReLU(alpha=.001))
+model.add(ELU(elu_alpha))
+model.add(Dropout(keep_prob))
 model.add(Dense(50))
-model.add(LeakyReLU(alpha=.001))
+model.add(ELU(elu_alpha))
+model.add(Dropout(keep_prob))
 model.add(Dense(10))
-model.add(LeakyReLU(alpha=.001))
+model.add(ELU(elu_alpha))
+model.add(Dropout(keep_prob))
 model.add(Dense(1))
 
 # training & validation
