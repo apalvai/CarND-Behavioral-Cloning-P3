@@ -10,7 +10,7 @@ from sklearn.utils import shuffle
 from keras.preprocessing.image import ImageDataGenerator
 
 from keras.models import Sequential
-from keras.layers import Flatten, Dense, Lambda, Cropping2D, Dropout
+from keras.layers import Flatten, Dense, Lambda, Cropping2D, Dropout, ZeroPadding2D
 from keras.layers.convolutional import Convolution2D
 from keras.layers.pooling import MaxPooling2D
 from keras.layers.advanced_activations import ELU
@@ -34,6 +34,15 @@ train_samples, validation_samples = train_test_split(samples, test_size=0.2)
 def read_image(path):
     image = cv2.imread(path)
     image = cv2.cvtColor(image,cv2.COLOR_BGR2RGB)
+    return image
+
+def crop_and_resize_image(image):
+    #crop top 60 px and bottom 20 px
+    height, width, channels = image.shape
+    top_y = 60
+    bottom_y = height - 20
+    image = image[top_y:bottom_y, :, :]
+    image = cv2.resize(image,(64, 64), interpolation=cv2.INTER_AREA)
     return image
 
 # flip image and steering angle
@@ -101,15 +110,12 @@ def process_image_and_measurement(image, angle):
     
     image = augment_brightness(image)
     
-    if random.uniform(0, 1) > 0.3:
-        image = add_gaussian_noise(image)
+    image = add_random_shadow(image)
     
-    if random.uniform(0, 1) > 0.4:
-        image = add_random_shadow(image)
-
-    if random.uniform(0, 1) > 0.2:
-        image, angle = translate(image, angle)
-
+    image, angle = translate(image, angle)
+    
+    image = crop_and_resize_image(image)
+    
     if random.uniform(0, 1) > 0.5:
         image, angle = flip_image_and_measurement(image, angle)
     
@@ -194,29 +200,44 @@ validation_generator = generator(validation_samples, batch_size=32)
 #    steering_measurements.extend((next(train_generator))[1])
 #plot_steering_angles(steering_measurements)
 
+#images = []
+#steering_measurements = []
+#images, steering_measurements = (next(train_generator))
+#steering_measurements = steering_measurements.tolist()
+#print('images shape: ', images.shape)
+#print('steering_measurements: ', steering_measurements)
+
+#for i in range(len(images)):
+#    plt.figure()
+#    plt.imshow(images[i])
+##plt.title('steering angle: ', steering_measurements[i])
+#plt.show()
 
 # params
 elu_alpha = 0.1
-keep_prob = 0.5
+keep_prob = 0.25
 
 # model
 model = Sequential()
-model.add(Cropping2D(cropping=((60, 20), (0, 0)), input_shape=(160, 320, 3))) # Image cropping
 model.add(Lambda(lambda x: (x / 255.0) - 0.5, input_shape=(80, 320, 3))) #Image normalization
 model.add(Convolution2D(3, 1, 1, border_mode='same'))
 model.add(Convolution2D(24, 5, 5, subsample=(2, 2)))
 model.add(ELU(elu_alpha))
-model.add(Dropout(keep_prob))
 model.add(Convolution2D(36, 3, 3, subsample=(2, 2)))
 model.add(ELU(elu_alpha))
-model.add(Dropout(keep_prob))
 model.add(Convolution2D(48, 3, 3, subsample=(2, 2)))
 model.add(ELU(elu_alpha))
 model.add(Dropout(keep_prob))
 model.add(Convolution2D(64, 3, 3))
 model.add(ELU(elu_alpha))
-model.add(Dropout(keep_prob))
 model.add(Convolution2D(64, 3, 3))
+model.add(ELU(elu_alpha))
+model.add(Dropout(keep_prob))
+model.add(ZeroPadding2D(padding=(1,1)))
+model.add(Convolution2D(128, 3, 3))
+model.add(ELU(elu_alpha))
+model.add(ZeroPadding2D(padding=(1,1)))
+model.add(Convolution2D(128, 3, 3))
 model.add(ELU(elu_alpha))
 model.add(Dropout(keep_prob))
 model.add(Flatten())
@@ -238,7 +259,7 @@ model.add(Dense(1))
 print('training...')
 model.compile(loss='mse', optimizer='adam')
 model.fit_generator(train_generator,
-                    samples_per_epoch=len(train_samples)*6,
+                    samples_per_epoch=len(train_samples)*8,
                     validation_data=validation_generator,
                     nb_val_samples=len(validation_samples),
                     nb_epoch=3,
