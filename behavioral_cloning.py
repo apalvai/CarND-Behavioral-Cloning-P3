@@ -39,7 +39,7 @@ def read_image(path):
 def crop_and_resize_image(image):
     #crop top 60 px and bottom 20 px
     height, width, channels = image.shape
-    top_y = 60
+    top_y = 30
     bottom_y = height - 20
     image = image[top_y:bottom_y, :, :]
     image = cv2.resize(image,(64, 64), interpolation=cv2.INTER_AREA)
@@ -214,12 +214,12 @@ validation_generator = generator(validation_samples, batch_size=32)
 #plt.show()
 
 # params
-elu_alpha = 0.1
+elu_alpha = 0.01
 keep_prob = 0.25
 
 # model
 model = Sequential()
-model.add(Lambda(lambda x: (x / 255.0) - 0.5, input_shape=(80, 320, 3))) #Image normalization
+model.add(Lambda(lambda x: (x / 255.0) - 0.5, input_shape=(64, 64, 3))) #Image normalization
 model.add(Convolution2D(3, 1, 1, border_mode='same'))
 model.add(Convolution2D(24, 5, 5, subsample=(2, 2)))
 model.add(ELU(elu_alpha))
@@ -231,13 +231,6 @@ model.add(Dropout(keep_prob))
 model.add(Convolution2D(64, 3, 3))
 model.add(ELU(elu_alpha))
 model.add(Convolution2D(64, 3, 3))
-model.add(ELU(elu_alpha))
-model.add(Dropout(keep_prob))
-model.add(ZeroPadding2D(padding=(1,1)))
-model.add(Convolution2D(128, 3, 3))
-model.add(ELU(elu_alpha))
-model.add(ZeroPadding2D(padding=(1,1)))
-model.add(Convolution2D(128, 3, 3))
 model.add(ELU(elu_alpha))
 model.add(Dropout(keep_prob))
 model.add(Flatten())
@@ -258,19 +251,23 @@ model.add(Dense(1))
 # training & validation
 print('training...')
 model.compile(loss='mse', optimizer='adam')
-model.fit_generator(train_generator,
-                    samples_per_epoch=len(train_samples)*8,
-                    validation_data=validation_generator,
-                    nb_val_samples=len(validation_samples),
-                    nb_epoch=3,
-                    verbose=1)
-
-#model.fit_generator(train_generator.flow(X_train, y_train, batch_size=32),
-#                    samples_per_epoch=len(X_train)*2,
-#                    validation_data=validation_generator.flow(X_valid, y_valid, batch_size=32),
-#                    nb_val_samples=len(X_valid),
-#                    nb_epoch=3)
+history_object = model.fit_generator(train_generator,
+                                     samples_per_epoch=len(train_samples)*8,
+                                     validation_data=validation_generator,
+                                     nb_val_samples=len(validation_samples),
+                                     nb_epoch=7,
+                                     verbose=1)
 
 # save model
 print('saving model...')
 model.save('model.h5')
+
+### plot the training and validation loss for each epoch
+plt.figure()
+plt.plot(history_object.history['loss'])
+plt.plot(history_object.history['val_loss'])
+plt.title('model mean squared error loss')
+plt.ylabel('mean squared error loss')
+plt.xlabel('epoch')
+plt.legend(['training set', 'validation set'], loc='upper right')
+plt.savefig('mse loss.png', bbox_inches='tight')

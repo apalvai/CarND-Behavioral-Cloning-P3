@@ -52,7 +52,7 @@ controller.set_desired(set_speed)
 def crop_and_resize_image(image):
     #crop top 60 px and bottom 20 px
     height, width, channels = image.shape
-    top_y = 60
+    top_y = 30
     bottom_y = height - 20
     image = image[top_y:bottom_y, :, :]
     image = cv2.resize(image,(64, 64), interpolation=cv2.INTER_AREA)
@@ -73,7 +73,6 @@ def telemetry(sid, data):
         image_array = np.asarray(image)
         
         image_array = crop_and_resize_image(image_array)
-        image_array = normalize_image(image_array)
         
         steering_angle = float(model.predict(image_array[None, :, :, :], batch_size=1))
 
