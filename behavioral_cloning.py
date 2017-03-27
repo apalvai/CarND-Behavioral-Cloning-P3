@@ -214,8 +214,7 @@ validation_generator = generator(validation_samples, batch_size=32)
 #plt.show()
 
 # params
-elu_alpha = 0.01
-keep_prob = 0.25
+elu_alpha = 0.1
 
 # model
 model = Sequential()
@@ -223,36 +222,30 @@ model.add(Lambda(lambda x: (x / 255.0) - 0.5, input_shape=(64, 64, 3))) #Image n
 model.add(Convolution2D(3, 1, 1, border_mode='same'))
 model.add(Convolution2D(24, 5, 5, subsample=(2, 2)))
 model.add(ELU(elu_alpha))
-model.add(Convolution2D(36, 3, 3, subsample=(2, 2)))
+model.add(Convolution2D(36, 5, 5, subsample=(2, 2)))
 model.add(ELU(elu_alpha))
 model.add(Convolution2D(48, 3, 3, subsample=(2, 2)))
 model.add(ELU(elu_alpha))
-model.add(Dropout(keep_prob))
 model.add(Convolution2D(64, 3, 3))
 model.add(ELU(elu_alpha))
 model.add(Convolution2D(64, 3, 3))
 model.add(ELU(elu_alpha))
-model.add(Dropout(keep_prob))
 model.add(Flatten())
 model.add(Dense(1164))
 model.add(ELU(elu_alpha))
-model.add(Dropout(keep_prob))
 model.add(Dense(100))
 model.add(ELU(elu_alpha))
-model.add(Dropout(keep_prob))
 model.add(Dense(50))
 model.add(ELU(elu_alpha))
-model.add(Dropout(keep_prob))
 model.add(Dense(10))
 model.add(ELU(elu_alpha))
-model.add(Dropout(keep_prob))
 model.add(Dense(1))
 
 # training & validation
 print('training...')
 model.compile(loss='mse', optimizer='adam')
 history_object = model.fit_generator(train_generator,
-                                     samples_per_epoch=len(train_samples)*8,
+                                     samples_per_epoch=len(train_samples)*32,
                                      validation_data=validation_generator,
                                      nb_val_samples=len(validation_samples),
                                      nb_epoch=7,
