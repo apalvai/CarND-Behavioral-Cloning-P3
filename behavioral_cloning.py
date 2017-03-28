@@ -7,14 +7,17 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
 
-from keras.preprocessing.image import ImageDataGenerator
-
 from keras.models import Sequential
+from keras.models import load_model
 from keras.layers import Flatten, Dense, Lambda, Cropping2D, Dropout, ZeroPadding2D
 from keras.layers.convolutional import Convolution2D
 from keras.layers.pooling import MaxPooling2D
 from keras.layers.advanced_activations import ELU
-from keras.callbacks import EarlyStopping
+
+import os.path
+
+#define model filename
+MODEL_FILE_NAME = 'model.h5'
 
 # fetch data
 print('reading data...')
@@ -213,33 +216,66 @@ validation_generator = generator(validation_samples, batch_size=32)
 ##plt.title('steering angle: ', steering_measurements[i])
 #plt.show()
 
-# params
-elu_alpha = 0.1
+# create & define model
+def create_model():
+    # params
+    elu_alpha = 0.1
 
-# model
-model = Sequential()
-model.add(Lambda(lambda x: (x / 255.0) - 0.5, input_shape=(64, 64, 3))) #Image normalization
-model.add(Convolution2D(3, 1, 1, border_mode='same'))
-model.add(Convolution2D(24, 5, 5, subsample=(2, 2)))
-model.add(ELU(elu_alpha))
-model.add(Convolution2D(36, 5, 5, subsample=(2, 2)))
-model.add(ELU(elu_alpha))
-model.add(Convolution2D(48, 3, 3, subsample=(2, 2)))
-model.add(ELU(elu_alpha))
-model.add(Convolution2D(64, 3, 3))
-model.add(ELU(elu_alpha))
-model.add(Convolution2D(64, 3, 3))
-model.add(ELU(elu_alpha))
-model.add(Flatten())
-model.add(Dense(1164))
-model.add(ELU(elu_alpha))
-model.add(Dense(100))
-model.add(ELU(elu_alpha))
-model.add(Dense(50))
-model.add(ELU(elu_alpha))
-model.add(Dense(10))
-model.add(ELU(elu_alpha))
-model.add(Dense(1))
+    # model
+    model = Sequential()
+    model.add(Lambda(lambda x: (x / 255.0) - 0.5, input_shape=(64, 64, 3))) #Image normalization
+    model.add(Convolution2D(3, 1, 1, border_mode='same'))
+    model.add(Convolution2D(24, 5, 5, subsample=(2, 2)))
+    model.add(ELU(elu_alpha))
+    model.add(Convolution2D(36, 5, 5, subsample=(2, 2)))
+    model.add(ELU(elu_alpha))
+    model.add(Convolution2D(48, 3, 3, subsample=(2, 2)))
+    model.add(ELU(elu_alpha))
+    model.add(Convolution2D(64, 3, 3))
+    model.add(ELU(elu_alpha))
+    model.add(Convolution2D(64, 3, 3))
+    model.add(ELU(elu_alpha))
+    model.add(Flatten())
+    model.add(Dense(1164))
+    model.add(ELU(elu_alpha))
+    model.add(Dense(100))
+    model.add(ELU(elu_alpha))
+    model.add(Dense(50))
+    model.add(ELU(elu_alpha))
+    model.add(Dense(10))
+    model.add(ELU(elu_alpha))
+    model.add(Dense(1))
+    
+    return model
+
+def load_saved_model(filename):
+    model = load_model(filename)
+    return model
+
+# save model
+def save_model(model, filename):
+    print('saving model...')
+    model.save(filename)
+
+### plot the training and validation loss for each epoch
+def plot_loss(history_object):
+    plt.figure()
+    plt.plot(history_object.history['loss'])
+    plt.plot(history_object.history['val_loss'])
+    plt.title('model mean squared error loss')
+    plt.ylabel('mean squared error loss')
+    plt.xlabel('epoch')
+    plt.legend(['training set', 'validation set'], loc='upper right')
+    plt.savefig('mse loss.png', bbox_inches='tight')
+
+
+model_path = './' + MODEL_FILE_NAME
+if os.path.exists(model_path):
+    print('loading saved model...')
+    model = load_saved_model(MODEL_FILE_NAME)
+else:
+    print('create new model...')
+    model = create_model()
 
 # training & validation
 print('training...')
@@ -251,16 +287,4 @@ history_object = model.fit_generator(train_generator,
                                      nb_epoch=7,
                                      verbose=1)
 
-# save model
-print('saving model...')
-model.save('model.h5')
-
-### plot the training and validation loss for each epoch
-plt.figure()
-plt.plot(history_object.history['loss'])
-plt.plot(history_object.history['val_loss'])
-plt.title('model mean squared error loss')
-plt.ylabel('mean squared error loss')
-plt.xlabel('epoch')
-plt.legend(['training set', 'validation set'], loc='upper right')
-plt.savefig('mse loss.png', bbox_inches='tight')
+save_model(model, MODEL_FILE_NAME)
