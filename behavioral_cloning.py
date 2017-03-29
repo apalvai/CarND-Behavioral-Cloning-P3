@@ -3,6 +3,7 @@ import numpy as np
 import cv2
 import random
 import matplotlib.pyplot as plt
+import math
 
 from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
@@ -31,7 +32,13 @@ with open ('./data/driving_log.csv') as csvfile:
 samples = samples[1:]
 
 # split training and validation data
-train_samples, validation_samples = train_test_split(samples, test_size=0.2)
+sample_size = len(samples)
+train_factor = 0.8
+train_limit = sample_size * train_factor
+train_samples = samples[:math.floor(train_limit)]
+validation_samples = samples[math.ceil(train_limit):]
+#train_samples, validation_samples = train_test_split(samples, test_size=0.2)
+print('train_samples count: ', len(train_samples), ' validation_samples count: ', len(validation_samples))
 
 # read image
 def read_image(path):
@@ -135,14 +142,14 @@ def plot_steering_angles(y_train):
 
 
 # data generator
-def generator(samples, batch_size=32):
-    num_samples = len(samples)
+def generator(gen_samples, batch_size=32):
+    num_samples = len(gen_samples)
     
     while 1:
         shuffle(samples)
         
         for offset in range(0, num_samples, batch_size):
-            batch_samples = samples[offset:offset+batch_size]
+            batch_samples = gen_samples[offset:offset+batch_size]
             
             images = []
             angles = []
