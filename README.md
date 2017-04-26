@@ -35,10 +35,9 @@ The behavioral_cloning.py contains code for reading the data provided by Udacity
 ###Model Architecture and Training Strategy
 
 ####1. Used Convolutional neural network based off of NVIDIA's architecture
-I chose Convolutional Neural Network to clone the driving behavior as it can learn different features of the environment without needing too many parameters.
+My model consists of 5 convolutional layers followed by 4 fully connected layers with ELU activation and 2 layers of Dropout. This model performs pretty well for the behavioral cloning task of driving around Track1.
 
-It consists of 5 convolutional layers followed by 4 fully connected layers with ELU activation and 2 layers of Dropout.
-This model performs pretty well for the behavioral cloning task of driving around Track1.
+I chose Convolutional Neural Network(CNN) to clone the driving behavior as it can learn different features of the environment without needing too many parameters. CNNs are particular useful when dealing with images as they allow us to optimize the architecture which in-turn will result in lesser number of parameters. Nvidia's architecture seemed liked a balance once between using too many layers (over-fitting) versus very few layers (under-fitting). I have employed initial convolution layer for model to chose color space[2]. I used ELU activation function (with alpha=0.001), as it seemed to allow model to learn faster with better accuracy than the other ones like RELU, Leaky RELU. To avoid over-fitting and make it more generalized, i've added 2 layers of Dropout with 0.5 probability. With this network i've achieved a training loss of ~0.267 after 7 epochs.
 
 Convolutional Layer: 3, 1, 1
 Convolutional Layer: 24, 5, 5
@@ -63,6 +62,8 @@ Fully Connected Layer: 10
 ELU Activation: alpha = 0.1
 Output 
 
+I save the model locally and re-train by tweaking some parameters to improve the performance.
+
 ####2. Parameter tuning
 I used Adam optimizer so as to avoid tuning the learning rate manually
 
@@ -72,15 +73,26 @@ I used Adam optimizer so as to avoid tuning the learning rate manually
 * Used center, left and right cameras' images with equal probability. This also helps in training the model for recovery driving. For left and right cameras' images, I used an offset of +0.25 amd -0.25 respectively for steering angle measurements.  
 * Employed Python's generator to augment the available training data by applying image processing techniques
 
-#####1. Pre-processed images
-** augment image brightness
-** translate the image in x & y direction
-** add rectangilar shadows in random areas of image 
-** flip the processed image horizontally with a probability of 0.5 
-** crop to remove unwanted areas (30 pixels from top and 20 pixels from bottom) 
-** normalize and mean center it around 0
-** resize the image to 64x64 to reduce the training times
+#####1. Image processing techniques
+** Augment image brightness: This will enable model to be more generalized and perform well even during varying light conditions.
+** Translate the image in x & y direction: This will help in recovery driving
+** Add shadows (reactangular) in random areas of image 
+** Flip the processed image horizontally with a probability of 0.5 
+** Crop to remove unwanted areas (30 pixels from top and 20 pixels from bottom) 
+** Normalize and mean center it around 0
+** Resize the image to 64x64 to reduce the training times
 
 #####2. Sampling data
 ** Looking at the distribution of steering angles in the training data, most of the data is near 0 which might result in model being trained to have bias towards 0. In order to avoid this scenario, I discarded some of the samples around 0 to have a better ditribution of steering angles.
 
+### References
+1. http://cs231n.github.io/
+2. https://chatbotslife.com/using-augmentation-to-mimic-human-driving-496b569760a9
+3. https://medium.com/@mohankarthik/cloning-a-car-to-mimic-human-driving-5c2f7e8d8aff
+4. https://keras.io/
+5. https://github.com/fchollet/keras/issues/688
+6. http://image-net.org/challenges/posters/JKU_EN_RGB_Schwarz_poster.pdf
+7. http://www.picalike.com/blog/2015/11/28/relu-was-yesterday-tomorrow-comes-elu/
+8. https://www.quora.com/How-does-ELU-activation-function-help-convergence-and-whats-its-advantages-over-ReLU-or-sigmoid-or-tanh-function
+9. https://arxiv.org/abs/1511.07289
+10. https://www.quora.com/How-does-the-dropout-method-work-in-deep-learning
