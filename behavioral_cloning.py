@@ -14,7 +14,7 @@ from keras.layers import Flatten, Dense, Lambda, Cropping2D, Dropout, ZeroPaddin
 from keras.layers.convolutional import Convolution2D
 from keras.layers.pooling import MaxPooling2D
 from keras.layers.advanced_activations import ELU
-import theano.d3viz as d3v
+import pydot
 
 import os.path
 
@@ -216,7 +216,7 @@ validation_generator = generator(validation_samples, batch_size=32)
 # create & define model
 def create_model():
     # params
-    elu_alpha = 0.01
+    elu_alpha = 0.001
     keep_prob = 0.5
 
     # model
@@ -268,6 +268,46 @@ def plot_loss(history_object):
     plt.legend(['training set', 'validation set'], loc='upper right')
     plt.savefig('mse loss.png', bbox_inches='tight')
 
+import pydot
+
+
+def plot(model, to_file='model.png'):
+    graph = pydot.Dot(graph_type='digraph')
+    if type(model) == Sequential:
+        previous_node = None
+        written_nodes = []
+        n = 1
+        for layer in model.layers:
+            # append number in case layers have same name to differentiate
+            config = layer.get_config()
+            if (config['name'] + str(n)) in written_nodes:
+                n += 1
+            current_node = pydot.Node(config['name'] + str(n))
+            written_nodes.append(config['name'] + str(n))
+            graph.add_node(current_node)
+            if previous_node:
+                graph.add_edge(pydot.Edge(previous_node, current_node))
+            previous_node = current_node
+        graph.write_png(to_file)
+    
+    elif type(model) == Graph:
+        config = model.get_config()
+        # don't need to append number for names since all nodes labeled
+        for input_node in config['input_config']:
+            graph.add_node(pydot.Node(input_node['name']))
+        
+        # intermediate and output nodes have input defined
+        for layer_config in [config['node_config'], config['output_config']]:
+            for node in layer_config:
+                graph.add_node(pydot.Node(node['name']))
+                # possible to have multiple 'inputs' vs 1 'input'
+                if node['inputs']:
+                    for e in node['inputs']:
+                        graph.add_edge(pydot.Edge(e, node['name']))
+                else:
+                    graph.add_edge(pydot.Edge(node['input'], node['name']))
+        
+    graph.write_png(to_file)
 
 model_path = './' + MODEL_FILE_NAME
 if os.path.exists(model_path):
@@ -288,5 +328,5 @@ history_object = model.fit_generator(train_generator,
                                      verbose=1)
 
 save_model(model, MODEL_FILE_NAME)
-d3v.d3viz(model.get_output(), 'test.html')
+plot(model)
 plot_loss(history_object)
