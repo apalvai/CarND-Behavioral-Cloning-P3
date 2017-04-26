@@ -17,9 +17,12 @@ My project includes following files:
 * behvaioral_cloning.py for defining and training the model
 * drive.py for driving the car in autonomous mode in udacity's simulator
 * model.h5 trained model
-* run-001.mp4 & run-002.mp4 video files demonstrating the performance of the model in autonomous driving mode
+* run-4.mp4 is the output video file of the car driving around track1 in autonomous mode
 * write_up.md report about the details of project
-
+* original_data.png depicting the ditribution of steering angles in the training data
+* normalized_data.png depicting the ditribution of steering angles after sampling the training data and discarding some of the entries around 0 angle.
+* model.png gives a graph out of the model
+* mse loss.png depicting the training and vaidation loss vs. epcohs
 
 ####2. Submission includes functional code Using the Udacity provided simulator and my drive.py file, the car can be driven autonomously around the track by executing
 

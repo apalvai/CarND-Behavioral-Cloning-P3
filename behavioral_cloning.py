@@ -122,12 +122,12 @@ def process_image_and_measurement(image, angle):
     return image, angle
 
 #plot steering angle measurements distribution
-def plot_steering_angles(y_train):
+def plot_steering_angles(y_train, filename: 'steering_angle_distribution.png'):
     unique_angles = list(set(y_train))
     unique_angles = unique_angles.sort()
     plt.hist(y_train, unique_angles)
     print('saving plot...')
-    plt.savefig('steering_angle_distribution.png', bbox_inches='tight')
+    plt.savefig(filename, bbox_inches='tight')
     # plt.show()
 
 
@@ -196,9 +196,17 @@ validation_generator = generator(validation_samples, batch_size=32)
 
 # plot steering angle measurements
 #steering_measurements = []
-#for i in range(50):
+#for i in range(100):
 #    steering_measurements.extend((next(train_generator))[1])
-#plot_steering_angles(steering_measurements)
+#print('steering_measurements: ', steering_measurements)
+#plot_steering_angles(steering_measurements, filename='normalized_data.png')
+
+#original_steering_measurements = []
+#for sample in samples:
+#    angle = float(sample[3])
+#    original_steering_measurements.append(angle)
+#print('original_steering_measurements: ', original_steering_measurements)
+#plot_steering_angles(original_steering_measurements, filename='original_data.png')
 
 #images = []
 #steering_measurements = []
