@@ -14,6 +14,7 @@ from keras.layers import Flatten, Dense, Lambda, Cropping2D, Dropout, ZeroPaddin
 from keras.layers.convolutional import Convolution2D
 from keras.layers.pooling import MaxPooling2D
 from keras.layers.advanced_activations import ELU
+import theano.d3viz as d3v
 
 import os.path
 
@@ -72,17 +73,6 @@ def augment_brightness(img):
     final_hsv = np.array(final_hsv, dtype = np.uint8)
     img = cv2.cvtColor(final_hsv, cv2.COLOR_HSV2BGR)
     return img
-
-# add gaussian noise
-def add_gaussian_noise(image):
-    row,col,ch= image.shape
-    mean = 0
-    var = 0.1
-    sigma = var**0.5
-    gauss = np.random.normal(mean,sigma,(row,col,ch))
-    gauss = gauss.reshape(row,col,ch)
-    noisy = image + gauss
-    return noisy
 
 # translate image and adjust sterring angle
 def translate(image, angle, trans_x_range=100, trans_y_range=40, angle_range=0.2):
@@ -226,7 +216,7 @@ validation_generator = generator(validation_samples, batch_size=32)
 # create & define model
 def create_model():
     # params
-    elu_alpha = 0.1
+    elu_alpha = 0.01
     keep_prob = 0.5
 
     # model
@@ -298,3 +288,5 @@ history_object = model.fit_generator(train_generator,
                                      verbose=1)
 
 save_model(model, MODEL_FILE_NAME)
+d3v.d3viz(model.get_output(), 'test.html')
+plot_loss(history_object)
