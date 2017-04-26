@@ -227,6 +227,7 @@ validation_generator = generator(validation_samples, batch_size=32)
 def create_model():
     # params
     elu_alpha = 0.1
+    keep_prob = 0.5
 
     # model
     model = Sequential()
@@ -238,10 +239,12 @@ def create_model():
     model.add(ELU(elu_alpha))
     model.add(Convolution2D(48, 3, 3, subsample=(2, 2)))
     model.add(ELU(elu_alpha))
+    model.add(Dropout(keep_prob))
     model.add(Convolution2D(64, 3, 3))
     model.add(ELU(elu_alpha))
     model.add(Convolution2D(64, 3, 3))
     model.add(ELU(elu_alpha))
+    model.add(Dropout(keep_prob))
     model.add(Flatten())
     model.add(Dense(1164))
     model.add(ELU(elu_alpha))
@@ -288,7 +291,7 @@ else:
 print('training...')
 model.compile(loss='mse', optimizer='adam')
 history_object = model.fit_generator(train_generator,
-                                     samples_per_epoch=len(train_samples)*32,
+                                     samples_per_epoch=len(train_samples)*8,
                                      validation_data=validation_generator,
                                      nb_val_samples=len(validation_samples),
                                      nb_epoch=7,
