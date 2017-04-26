@@ -65,13 +65,16 @@ Output
 I save the model locally and re-train by tweaking some parameters to improve the performance.
 
 ####2. Parameter tuning
-I used Adam optimizer so as to avoid tuning the learning rate manually
+* I used Adam optimizer so as to avoid tuning the learning rate manually.
+* I have tried various values of alpha for ELU and found 0.001 to have better accuracy (resulting smoother driving).
+* I have used different combinations of Dropout layers and noticed that adding more of them increased the training loss. Hence 2 Droput layers seemed like compromise between making a model generalized and achieve desired accuracy.
+* I have added 2 additional convolutional layers of size (128, 3, 3) but did not see any considerable improvement in reducing the training/validation loss, so i used the same number of layers as described in NVIDIA's paper.  
 
 ####3. Training data
 * Used 80-20 split of the available data for training and validation samples
 * Trainging data has been shuffled for every epoch
 * Used center, left and right cameras' images with equal probability. This also helps in training the model for recovery driving. For left and right cameras' images, I used an offset of +0.25 amd -0.25 respectively for steering angle measurements.  
-* Employed Python's generator to augment the available training data by applying image processing techniques
+* Employed Python's generator to augment the available training data by applying image processing techniques and used around ~50k samples.
 
 #####1. Image processing techniques
 ** Augment image brightness: This will enable model to be more generalized and perform well even during varying light conditions.
@@ -84,6 +87,9 @@ I used Adam optimizer so as to avoid tuning the learning rate manually
 
 #####2. Sampling data
 ** Looking at the distribution of steering angles in the training data, most of the data is near 0 which might result in model being trained to have bias towards 0. In order to avoid this scenario, I discarded some of the samples around 0 to have a better ditribution of steering angles.
+
+### Discussion
+This project was challenging and a great learning experience. Picking the right # of training epochs was some what counter-intutive as I would expect the model to learn well as you increase the # of epochs. Although my model was able to drive around Track1, it fails to complete Track2. I've' tried with different combinations but my model's training loss did not go beyond ~0.0267. I've used different image augmentation techniques to make the model perform better in various lighting conditions and recover well if it deviates from the center of road. However, I suspect there is a penalty in the form of increased training loss. I've made use of Python's Generator concept to create more samples than available, using different image processing techniques and also able to train the model in a memory efficient way.
 
 ### References
 1. http://cs231n.github.io/
