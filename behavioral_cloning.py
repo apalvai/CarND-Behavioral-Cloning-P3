@@ -130,6 +130,25 @@ def plot_steering_angles(y_train, filename: 'steering_angle_distribution.png'):
     plt.savefig(filename, bbox_inches='tight')
     # plt.show()
 
+def plot_images_with_angles(images, steering_angles):
+    columns = 4
+    rows = math.ceil(len(images)/columns)
+    fig, axarr = plt.subplots(rows, columns)
+    plt.rc('font', size=8)
+    for i in range(len(images)):
+        row = math.floor(i/columns)
+        column = i%columns
+        axarr[row, column].imshow(images[i])
+        axarr[row, column].set_title('steering angle: ' + str(round(steering_measurements[i], 2)))
+    
+    fig.subplots_adjust(hspace=0.3)
+    fig.subplots_adjust(top=2.0)
+
+    default_size = fig.get_size_inches()
+    fig.set_size_inches( (default_size[0]*2, default_size[1]*2), forward=True)
+
+    plt.savefig('training_examples.png', bbox_inches='tight')
+    plt.show()
 
 # data generator
 def generator(gen_samples, batch_size=32):
@@ -214,12 +233,7 @@ validation_generator = generator(validation_samples, batch_size=32)
 #steering_measurements = steering_measurements.tolist()
 #print('images shape: ', images.shape)
 #print('steering_measurements: ', steering_measurements)
-
-#for i in range(len(images)):
-#    plt.figure()
-#    plt.imshow(images[i])
-##plt.title('steering angle: ', steering_measurements[i])
-#plt.show()
+#plot_images_with_angles(images, steering_measurements)
 
 # create & define model
 def create_model():
