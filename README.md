@@ -21,6 +21,7 @@ My project includes following files:
 * write_up.md report about the details of project
 * original_data.png depicting the ditribution of steering angles in the training data
 * normalized_data.png depicting the ditribution of steering angles after sampling the training data and discarding some of the entries around 0 angle.
+* training_examples.png showing a batch of training examples with all the image processing steps applied.
 * model.png gives a graph out of the model
 * mse loss.png depicting the training and vaidation loss vs. epcohs
 
